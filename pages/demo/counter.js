@@ -1,4 +1,4 @@
-import BroadcastMessage from "../index.js";
+import BroadcastMessage from "../../src/index.js";
 
 const broadcastMessage = new BroadcastMessage({
   channelId: "test001",
@@ -24,3 +24,5 @@ export function setupCounter(element) {
   element.addEventListener("click", () => setCounter(counter + 1));
   setCounter(0);
 }
+
+window.BroadcastMessage = BroadcastMessage;
