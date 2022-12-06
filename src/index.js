@@ -623,3 +623,4 @@ class BroadcastMessage {
 }
 
 export default BroadcastMessage
+
