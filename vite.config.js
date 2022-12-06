@@ -32,6 +32,8 @@ export default defineConfig((command) => {
           targets: ['defaults', 'not IE 11']
         })
       ],
+      /* 使用相对地址 */
+      base: './',
       // https://cn.vitejs.dev/config/build-options.html
       build: {
         rollupOptions: {

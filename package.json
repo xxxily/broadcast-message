@@ -1,13 +1,22 @@
 {
   "name": "broadcast-message",
-  "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "基于postMessage+BroadcastChannel+localStorage+互信域名的前端页面数据通信解决方案",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
+  "author": "Blaze",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "homepage": "https://broadcast-message.anzz.top",
+  "repository": "https://github.com/xxxily/broadcast-message",
+  "git": "https://github.com/xxxily/broadcast-message",
+  "bugs": {
+    "url": "https://github.com/xxxily/broadcast-message/issues"
+  },
   "main": "./dist/BroadcastMessage.umd.cjs",
   "module": "./dist/BroadcastMessage.js",
   "scripts": {
