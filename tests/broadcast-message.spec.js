@@ -33,7 +33,7 @@ test.describe("同域", () => {
     return new Promise((resolve, reject) => {
       const broadcastMessage = new window.BroadcastMessage(bmOpts);
 
-      broadcastMessage.addEventListener("message", function (event) {
+      broadcastMessage.addEventListener("message", event => {
         console.log(
           `[BroadcastMessage-Event][onMessage][End-to-End-Testing]`,
           event.data
@@ -93,7 +93,7 @@ test.describe("跨域", () => {
   const bmOpts = {
     channelId: "End-to-End-Testing-cross-domain",
     trustedDomainPages:
-      "https://broadcast-message.anzz.top/dist/pages/broadcast-message.html?t=ccc",
+      "https://broadcast-message.anzz.top/dist/pages/broadcast-message.html",
     targetOrigin: "*",
     // transportType: 'localStorage',
     allowLocalBroadcast: false,
@@ -115,7 +115,7 @@ test.describe("跨域", () => {
         const broadcastMessage = new window.BroadcastMessage(bmOpts);
         const msgArr = [];
 
-        broadcastMessage.addEventListener("message", function (event) {
+        broadcastMessage.addEventListener("message", event => {
           const data = event.data
           if (data.channelId !== "End-to-End-Testing-cross-domain") {
             return false;
