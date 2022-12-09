@@ -2,6 +2,18 @@
   "name": "broadcast-message",
   "version": "0.0.2",
   "description": "基于postMessage+BroadcastChannel+localStorage+互信域名的前端页面数据通信解决方案",
+  "keywords": [
+    "BroadcastMessage",
+    "Broadcast",
+    "postMessage",
+    "BroadcastChannel",
+    "localStorage",
+    "crosstab",
+    "cross-domain",
+    "ipc",
+    "domain",
+    "trust"
+  ],
   "type": "module",
   "files": [
     "dist",
@@ -12,17 +24,22 @@
     "registry": "https://registry.npmjs.org"
   },
   "homepage": "https://broadcast-message.anzz.top",
-  "repository": "https://github.com/xxxily/broadcast-message",
-  "git": "https://github.com/xxxily/broadcast-message",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xxxily/broadcast-message"
+  },
   "bugs": {
     "url": "https://github.com/xxxily/broadcast-message/issues"
   },
-  "main": "./dist/BroadcastMessage.umd.cjs",
-  "module": "./dist/BroadcastMessage.js",
+  "main": "dist/BroadcastMessage.umd.cjs",
+  "module": "dist/BroadcastMessage.js",
+  "typings": "dist/types/index.d.ts",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --mode lib",
-    "build-lib": "vite build --mode lib-only",
+    "build": "vite build && vite build --mode lib && tsc",
+    "build-lib": "vite build --mode lib-only && tsc",
+    "build-types": "tsc --emitDeclarationOnly --outDir dist/types",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest run --coverage"
@@ -34,6 +51,7 @@
     "@playwright/test": "^1.28.1",
     "@rollup/plugin-babel": "^6.0.2",
     "@vitejs/plugin-legacy": "^2.3.1",
+    "typescript": "^4.9.3",
     "vite": "^3.2.3",
     "vite-plugin-babel": "^1.1.2",
     "vitest": "^0.25.2"

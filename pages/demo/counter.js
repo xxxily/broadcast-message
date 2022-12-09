@@ -1,4 +1,4 @@
-import BroadcastMessage from "../../src/index.js";
+import BroadcastMessage from "../../src/index.ts";
 
 const broadcastMessage = new BroadcastMessage({
   channelId: "test001",
