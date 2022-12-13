@@ -42,7 +42,13 @@
     "build-types": "tsc --emitDeclarationOnly --outDir dist/types",
     "preview": "vite preview",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "vuepress-docs:dev": "vuepress dev docs",
+    "vuepress-docs:build": "vuepress build docs",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "endTest": "playwright test broadcast-message.spec.js --reporter=html"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
@@ -54,7 +60,9 @@
     "typescript": "^4.9.3",
     "vite": "^3.2.3",
     "vite-plugin-babel": "^1.1.2",
-    "vitest": "^0.25.2"
+    "vitepress": "^1.0.0-alpha.30",
+    "vitest": "^0.25.2",
+    "vue": "^3.2.45"
   },
   "dependencies": {
     "core-js": "^3.26.1",
