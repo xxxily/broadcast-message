@@ -6,7 +6,7 @@ export default {
   description: '基于postMessage+BroadcastChannel+localStorage+互信域名的前端页面数据通信解决方案',
   lang: 'zh-CN',
   base: '/',
-  dest: './dist/broadcast-message-docs',
+  outDir: '../dist/docs',
   head: [
     [
       'script',

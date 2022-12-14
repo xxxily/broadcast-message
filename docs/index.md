@@ -6,7 +6,7 @@ hero:
   text: 基于postMessage+BroadcastChannel+localStorage+互信域名的前端页面数据通信解决方案
   tagline: BroadcastMessage Broadcast postMessage localStorage cross-tab cross-domain ipc domain trust
   image:
-    src: /assets/img/logo.png
+    src: https://broadcast-message.anzz.top/dist/assets/logo.png
     alt: VitePress
   actions:
     - theme: alt
