@@ -7,10 +7,10 @@
  * @github       https://github.com/xxxily
  */
 
-import { parseURL, stringifyParams, stringifyToUrl } from './utils/url'
+import { parseURL, stringifyToUrl } from './utils/url'
 
 class BroadcastMessage {
-  constructor (opts = {}) {
+  constructor(opts = {}) {
     /**
      * 指定消息发送的目标域，规则跟postMessage的targetOrigin一样
      * 但不同的是支持定义数组形式的targetOrigin，从而实现批量跨域数据发送
@@ -57,7 +57,7 @@ class BroadcastMessage {
     this.init(opts)
   }
 
-  init () {
+  init() {
     /* 给trustedDomainPages的URL补充相关参数 */
     if (this.trustedDomainPages) {
       const urlInfo = parseURL(this.trustedDomainPages)
@@ -78,7 +78,7 @@ class BroadcastMessage {
     }
   }
 
-  getTrustedDomain () {
+  getTrustedDomain() {
     if (this.trustedDomainPages) {
       return parseURL(this.trustedDomainPages).origin
     } else {
@@ -91,7 +91,7 @@ class BroadcastMessage {
    * @param {String} msg
    * @returns
    */
-  __sendMessageToParentWindow__ (msg) {
+  __sendMessageToParentWindow__(msg) {
     if (window.parent === window || !msg) {
       return false
     }
@@ -99,15 +99,18 @@ class BroadcastMessage {
     const channelId = window.__broadcastMessageChannelId__ || this.channelId
     const instanceId = window.__broadcastMessageInstanceId__ || this.instanceId
 
-    window.parent.postMessage({
-      data: msg,
-      channelId,
-      instanceId,
-      type: 'Internal-BroadcastMessage'
-    }, '*')
+    window.parent.postMessage(
+      {
+        data: msg,
+        channelId,
+        instanceId,
+        type: 'Internal-BroadcastMessage',
+      },
+      '*'
+    )
   }
 
-  __registerMessageWindow__ () {
+  __registerMessageWindow__() {
     if (this.messageWindow !== window) {
       return false
     }
@@ -161,9 +164,11 @@ class BroadcastMessage {
     }
   }
 
-  __registerPostMessageListener__ () {
+  __registerPostMessageListener__() {
     const self = this
-    if (self.__hasRegisterPostMessageListener__) { return false }
+    if (self.__hasRegisterPostMessageListener__) {
+      return false
+    }
 
     /* 一定要处于iframe才会注册PostMessageListener */
     if (window.top === window) {
@@ -189,7 +194,7 @@ class BroadcastMessage {
     }
 
     /* 消息中转传输的iframe */
-    function messageIframe () {
+    function messageIframe() {
       let messageIframe = document.querySelector('#message-transport-iframe')
 
       if (messageIframe) {
@@ -208,7 +213,7 @@ class BroadcastMessage {
      * 通过当前页的子iframe来执行消息传送逻辑，这样当前页面的window对象才会接收到到storage事件或BroadcastChannel消息
      * 如果直接执行消息传送逻辑，则还需要创建个子iframe来接受storage事件或BroadcastChannel的消息，会导致导致需要更多层级的数据传递
      */
-    function transportMessage (event) {
+    function transportMessage(event) {
       /* 给将要中转传输的数据补充相关信息字段 */
       const message = event.data
       message.windowId = window.__windowId__
@@ -234,10 +239,12 @@ class BroadcastMessage {
     messageIframe()
 
     /* 处理从window.parent传过来的内部消息 */
-    function internalBroadcastMessageHandler (event) {
+    function internalBroadcastMessageHandler(event) {
       const message = event.data
 
-      if (!message) { return false }
+      if (!message) {
+        return false
+      }
 
       if (message.data === 'readyTest') {
         window.__broadcastMessageReadyInfo__ = message
@@ -251,28 +258,34 @@ class BroadcastMessage {
     }
 
     /* 注册postMessage的侦听事件，并将接收到的数据交给消息中转传输逻辑传送出去或进行内部处理 */
-    window.addEventListener('message', (event) => {
-      const message = event.data
-      if (!message || !message.type) {
-        return false
-      }
+    window.addEventListener(
+      'message',
+      (event) => {
+        const message = event.data
+        if (!message || !message.type) {
+          return false
+        }
 
-      if (message.type === 'BroadcastMessage') {
-        transportMessage(event)
-      } else if (message.type === 'Internal-BroadcastMessage') {
-        internalBroadcastMessageHandler(event)
-      }
-    }, true)
+        if (message.type === 'BroadcastMessage') {
+          transportMessage(event)
+        } else if (message.type === 'Internal-BroadcastMessage') {
+          internalBroadcastMessageHandler(event)
+        }
+      },
+      true
+    )
     this.__hasRegisterPostMessageListener__ = true
   }
 
-  __registerBroadcastChannelListener__ () {
+  __registerBroadcastChannelListener__() {
     if (!window.BroadcastChannel || !BroadcastChannel.prototype.postMessage) {
       console.error(`[BroadcastChannel][${location.origin}]`, '不支持BroadcastChannel')
       return false
     }
 
-    if (this.__BroadcastChannelInstance__) { return true }
+    if (this.__BroadcastChannelInstance__) {
+      return true
+    }
 
     const BroadcastChannelInstance = new BroadcastChannel('__BroadcastChannelMessage__')
     BroadcastChannelInstance.addEventListener('message', (event) => {
@@ -296,12 +309,15 @@ class BroadcastMessage {
 
       /* 将接受到的事件数据通过postMessage传递回给上层的window */
       const targetOriginList = Array.isArray(message.targetOrigin) ? message.targetOrigin : [message.targetOrigin]
-      targetOriginList.forEach(targetOrigin => {
+      targetOriginList.forEach((targetOrigin) => {
         /* 检查当前的BroadcastMessage被哪个父页面嵌套，当父页面的地址和targetOrigin不匹配时，不向上传递数据 */
         const readyInfo = window.__broadcastMessageReadyInfo__ || null
         if (targetOrigin !== '*' && (!readyInfo || !readyInfo.referrer.startsWith(targetOrigin))) {
           if (message.instanceId !== readyInfo.instanceId) {
-            message.debug && console.warn(`[BroadcastChannel-event] 消息的targetOrigin和当前父页面的地址不匹配，取消数据向上传递，[targetOrigin]${targetOrigin} [parent page]${readyInfo.referrer}`)
+            message.debug &&
+              console.warn(
+                `[BroadcastChannel-event] 消息的targetOrigin和当前父页面的地址不匹配，取消数据向上传递，[targetOrigin]${targetOrigin} [parent page]${readyInfo.referrer}`
+              )
           }
           return false
         }
@@ -313,8 +329,10 @@ class BroadcastMessage {
     this.__BroadcastChannelInstance__ = BroadcastChannelInstance
   }
 
-  __registerStorageMessageListener__ () {
-    if (this.__hasRegisterStorageListener__) { return false }
+  __registerStorageMessageListener__() {
+    if (this.__hasRegisterStorageListener__) {
+      return false
+    }
 
     window.addEventListener('storage', (event) => {
       let message = event.newValue
@@ -355,12 +373,15 @@ class BroadcastMessage {
 
       /* 将接受到的事件数据通过postMessage传递回给上层的window */
       const targetOriginList = Array.isArray(message.targetOrigin) ? message.targetOrigin : [message.targetOrigin]
-      targetOriginList.forEach(targetOrigin => {
+      targetOriginList.forEach((targetOrigin) => {
         /* 检查当前的BroadcastMessage被哪个父页面嵌套，当父页面的地址和targetOrigin不匹配时，不向上传递数据 */
         const readyInfo = window.__broadcastMessageReadyInfo__ || { referrer: '' }
         if (targetOrigin !== '*' && !readyInfo.referrer.startsWith(targetOrigin)) {
           if (message.instanceId !== readyInfo.instanceId) {
-            message.debug && console.warn(`[storage-event] 消息的targetOrigin和当前父页面的地址不匹配，取消数据向上传递，[targetOrigin]${targetOrigin} [parent page]${readyInfo.referrer}`)
+            message.debug &&
+              console.warn(
+                `[storage-event] 消息的targetOrigin和当前父页面的地址不匹配，取消数据向上传递，[targetOrigin]${targetOrigin} [parent page]${readyInfo.referrer}`
+              )
           }
           return false
         }
@@ -372,13 +393,13 @@ class BroadcastMessage {
     this.__hasRegisterStorageListener__ = true
   }
 
-  postMessage (message, messageType) {
+  postMessage(message, messageType) {
     /* 初始化未就绪前，把需要post出去的数据先预存起来，等Ready之后再发送出去 */
     if (!this._isReady_ && messageType !== 'Internal-BroadcastMessage') {
       if (!this._message_cache_) {
         this.ready(() => {
           if (Array.isArray(this._message_cache_)) {
-            this._message_cache_.forEach(message => {
+            this._message_cache_.forEach((message) => {
               this.postMessage(message)
             })
 
@@ -403,7 +424,7 @@ class BroadcastMessage {
       allowLocalBroadcast: this.allowLocalBroadcast,
       channelId: this.channelId,
       instanceId: this.instanceId,
-      debug: this.debug
+      debug: this.debug,
     }
 
     if (!this.messageWindow || !this.messageWindow.postMessage) {
@@ -415,78 +436,84 @@ class BroadcastMessage {
     this.messageWindow.postMessage(data, trustedDomain)
   }
 
-  onMessage (handler) {
+  onMessage(handler) {
     this.__messageListener__ = this.__messageListener__ || []
 
     if (handler instanceof Function && !this.__messageListener__.includes(handler)) {
       this.__messageListener__.push(handler)
     }
 
-    if (this.__hasMessageListener__) { return false }
+    if (this.__hasMessageListener__) {
+      return false
+    }
     this.__hasMessageListener__ = true
 
-    window.addEventListener('message', (event) => {
-      /**
-       * 此处是最终的消息出口
-       * 属于数据安全的最后一道防线，也是最脆弱的防线
-       * 需要对原始数据进行调整或和过滤后才能给handler使用
-       * 数据传送上来之前应该尽可能避免无关的数据被传到这里
-       **/
+    window.addEventListener(
+      'message',
+      (event) => {
+        /**
+         * 此处是最终的消息出口
+         * 属于数据安全的最后一道防线，也是最脆弱的防线
+         * 需要对原始数据进行调整或和过滤后才能给handler使用
+         * 数据传送上来之前应该尽可能避免无关的数据被传到这里
+         **/
 
-      const message = event.data
-      const isBroadcastMessage = message && message.type === 'BroadcastMessage' && message.data && message.channelId && message.referrer
+        const message = event.data
+        const isBroadcastMessage = message && message.type === 'BroadcastMessage' && message.data && message.channelId && message.referrer
 
-      /* 排除其它postMessage逻辑发送过来的无关数据 */
-      if (!isBroadcastMessage) {
-        return false
-      }
-
-      /**
-       * 不同频道的数据在传送过来前就应该被取消掉，这里是为了加一道保险
-       * 实际上非同源的不同频道的数据来到这里，说明数据已经不安全了，需完善脚本逻辑
-       */
-      if (this.channelId !== '*' && message.channelId !== this.channelId) {
-        if (message.origin !== location.origin) {
-          message.debug && console.error('[messageListener] 存在数据安全隐患，请完善脚本逻辑', this.channelId, event)
+        /* 排除其它postMessage逻辑发送过来的无关数据 */
+        if (!isBroadcastMessage) {
+          return false
         }
 
-        return false
-      }
-
-      const fakeEvent = {}
-
-      try {
-        for (const key in event) {
-          let value = event[key]
-          if (key === 'data' && !this.emitOriginalMessage) {
-            value = message.data
-          } else {
-            if (key === 'type') {
-              value = 'BroadcastMessage'
-            }
+        /**
+         * 不同频道的数据在传送过来前就应该被取消掉，这里是为了加一道保险
+         * 实际上非同源的不同频道的数据来到这里，说明数据已经不安全了，需完善脚本逻辑
+         */
+        if (this.channelId !== '*' && message.channelId !== this.channelId) {
+          if (message.origin !== location.origin) {
+            message.debug && console.error('[messageListener] 存在数据安全隐患，请完善脚本逻辑', this.channelId, event)
           }
 
-          Object.defineProperty(fakeEvent, key, {
-            enumerable: key === 'data',
-            writable: false,
-            configurable: true,
-            value: value
-          })
+          return false
         }
-      } catch (e) {}
 
-      this.__messageListener__.forEach(handler => {
-        handler instanceof Function && handler(fakeEvent)
-      })
-    }, true)
+        const fakeEvent = {}
+
+        try {
+          for (const key in event) {
+            let value = event[key]
+            if (key === 'data' && !this.emitOriginalMessage) {
+              value = message.data
+            } else {
+              if (key === 'type') {
+                value = 'BroadcastMessage'
+              }
+            }
+
+            Object.defineProperty(fakeEvent, key, {
+              enumerable: key === 'data',
+              writable: false,
+              configurable: true,
+              value: value,
+            })
+          }
+        } catch (e) {}
+
+        this.__messageListener__.forEach((handler) => {
+          handler instanceof Function && handler(fakeEvent)
+        })
+      },
+      true
+    )
   }
 
-  offMessage (handler) {
+  offMessage(handler) {
     this.__messageListener__ = this.__messageListener__ || []
 
     const tempStorageListener = []
 
-    this.__messageListener__.forEach(item => {
+    this.__messageListener__.forEach((item) => {
       if (item !== handler) {
         tempStorageListener.push(item)
       }
@@ -495,43 +522,50 @@ class BroadcastMessage {
     this.__messageListener__ = tempStorageListener
   }
 
-  postMessageToInternal (message) {
+  postMessageToInternal(message) {
     this.postMessage(message, 'Internal-BroadcastMessage')
   }
 
   /**
    * 侦听来自messageWindow的内部通信信息，主要用于脚本内部逻辑的状态传递和数据同步等，一般来说业务层无需监听内部消息
    */
-  onInternalMessage (handler) {
+  onInternalMessage(handler) {
     this.__internalMessageListener__ = this.__internalMessageListener__ || []
     if (handler instanceof Function && !this.__internalMessageListener__.includes(handler)) {
       this.__internalMessageListener__.push(handler)
     }
 
-    if (this.__hasInternalMessageListener__) { return false }
+    if (this.__hasInternalMessageListener__) {
+      return false
+    }
     this.__hasInternalMessageListener__ = true
 
-    window.addEventListener('message', (event) => {
-      const message = event.data
-      const isInternalMessage = message && message.type === 'Internal-BroadcastMessage' && message.channelId === this.channelId && message.instanceId === this.instanceId
+    window.addEventListener(
+      'message',
+      (event) => {
+        const message = event.data
+        const isInternalMessage =
+          message && message.type === 'Internal-BroadcastMessage' && message.channelId === this.channelId && message.instanceId === this.instanceId
 
-      /* 排除其它postMessage逻辑发送过来的无关数据 */
-      if (!isInternalMessage) {
-        return false
-      }
+        /* 排除其它postMessage逻辑发送过来的无关数据 */
+        if (!isInternalMessage) {
+          return false
+        }
 
-      this.__internalMessageListener__.forEach(handler => {
-        handler instanceof Function && handler(event)
-      })
-    }, true)
+        this.__internalMessageListener__.forEach((handler) => {
+          handler instanceof Function && handler(event)
+        })
+      },
+      true
+    )
   }
 
-  offInternalMessage (handler) {
+  offInternalMessage(handler) {
     this.__internalMessageListener__ = this.__internalMessageListener__ || []
 
     const tempStorageListener = []
 
-    this.__internalMessageListener__.forEach(item => {
+    this.__internalMessageListener__.forEach((item) => {
       if (item !== handler) {
         tempStorageListener.push(item)
       }
@@ -540,19 +574,23 @@ class BroadcastMessage {
     this.__internalMessageListener__ = tempStorageListener
   }
 
-  addEventListener (type, listener) {
-    if (type !== 'message') { return false }
+  addEventListener(type, listener) {
+    if (type !== 'message') {
+      return false
+    }
 
     this.onMessage(listener)
   }
 
-  removeEventListener (type, listener) {
-    if (type !== 'message') { return false }
+  removeEventListener(type, listener) {
+    if (type !== 'message') {
+      return false
+    }
 
     this.offMessage(listener)
   }
 
-  ready (handler) {
+  ready(handler) {
     if (this._isReady_) {
       if (handler instanceof Function) {
         handler(true)
@@ -566,7 +604,7 @@ class BroadcastMessage {
 
       this.__readyHandler__ = []
 
-      const readyHandler = event => {
+      const readyHandler = (event) => {
         const message = event.data
 
         if (message.data === 'initReady') {
@@ -584,7 +622,7 @@ class BroadcastMessage {
             console.log(`[BroadcastMessage][ready] 耗时：${this.readyTime}`)
           }
 
-          this.__readyHandler__.forEach(handler => {
+          this.__readyHandler__.forEach((handler) => {
             if (handler instanceof Function) {
               handler(true)
             }
@@ -608,7 +646,7 @@ class BroadcastMessage {
     }
   }
 
-  close () {
+  close() {
     if (this.__BroadcastChannelInstance__ && this.__BroadcastChannelInstance__.close) {
       this.__BroadcastChannelInstance__.close()
     }
@@ -623,4 +661,3 @@ class BroadcastMessage {
 }
 
 export default BroadcastMessage
-
